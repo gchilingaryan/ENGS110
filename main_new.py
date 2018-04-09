@@ -15,8 +15,10 @@ def loadStudentGrades():
         if file.readlines() == []:
             file.write("{}")
             file.close()
-    except Exception as e:
-        print e
+    except:
+        file = open('gc_grades.json', 'w')
+        file.write("{}")
+        file.close()
 
     with open('gc_grades.json') as data_file:
         student_grades = json.load(data_file)
