@@ -1,5 +1,6 @@
 import json
 
+
 def loadSetupData():
     with open('gc_setup.json') as data_file:
         course = json.load(data_file)
@@ -9,6 +10,12 @@ def loadSetupData():
     return grades, conv_matrix
 
 def loadStudentGrades():
+    file = open('gc_grades.json', 'r+')
+
+    if file.readlines() == []:
+        file.write("{}")
+        file.close()
+
     with open('gc_grades.json') as data_file:
         student_grades = json.load(data_file)
 
