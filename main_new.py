@@ -40,6 +40,9 @@ def askForAssignmentMarks(grades, student_grades, id):
                     checkNumber(key, current_grades, student_new_grade, id)
                 else:
                     current_grades[id][key] = student_grades[id][key]
+            else:
+                student_new_grade = int(raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet "))
+                checkNumber(key, current_grades, student_new_grade, id)
         else:
             student_new_grade = int(raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet "))
             checkNumber(key, current_grades, student_new_grade, id)
