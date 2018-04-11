@@ -28,42 +28,57 @@ def loadStudentGrades():
 def askForUserInfo():
     name = raw_input("Please, input your name ")
     id = raw_input("Please, input your id ")
+    password = raw_input("Please, input your password ")
 
-    return name, id
+    return name, id, password
 
 def askForAssignmentMarks(grades, student_grades, id):
-    current_grades = {id: {}}
+    current_grades = {id: {"user" : {}, "grades" : {}}}
 
     for key in grades:
         if id in student_grades.keys():
-            if student_grades[id][key] > -1 :
-                student_answer = raw_input("Your grade for " + key + " is " + str(student_grades[id][key]) + ". Do you want to change it? ")
-                if student_answer == "Yes" or student_answer == "yes":
-                    student_new_grade = int(raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet "))
-                    checkNumber(key, current_grades, student_new_grade, id)
+            if student_grades[id]["grades"][key] > -1 :
+                student_input = raw_input("Your grade for " + key + " is " + str(student_grades[id]["grades"][key]) + ". Do you want to change it? ")
+                if student_input == "Yes" or student_input == "yes":
+                    student_input = raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet ")
+                    student_input = ValidInput(key, student_input)
+                    ValidNumber(key, current_grades, student_input, id)
                 else:
-                    current_grades[id][key] = student_grades[id][key]
+                    current_grades[id]["grades"][key] = student_grades[id]["grades"][key]
             else:
-                student_new_grade = int(raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet "))
-                checkNumber(key, current_grades, student_new_grade, id)
+                student_input = raw_input("You have no grade for " + key + ". Please insert a grade or -1 again if you don't have a grade yet ")
+                student_input = ValidInput(key, student_input)
+                ValidNumber(key, current_grades, student_input, id)
         else:
-            student_new_grade = int(raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet "))
-            checkNumber(key, current_grades, student_new_grade, id)
+            student_input = raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet ")
+            student_input = ValidInput(key, student_input)
+            ValidNumber(key, current_grades, student_input, id)
     return current_grades
 
-def checkNumber(key, current_grades, student_new_grade, id):
+def ValidNumber(key, current_grades, student_input, id):
     while True:
-        if (student_new_grade < 0 or student_new_grade > 100) and student_new_grade != -1:
+        if (student_input < 0 or student_input > 100) and student_input != -1:
             print "Wrong input! Input number from 0 to 100"
-            student_new_grade = int(raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet "))
+            student_input = int(raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet "))
         else:
-            current_grades[id][key] = student_new_grade
+            current_grades[id]["grades"][key] = student_input
             break
 
+def ValidInput(key, student_input):
+    while True:
+        try:
+            student_input = int(student_input)
+            break
+        except:
+            print "Input a number!"
+            student_input = raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet ")
 
-def saveGrades(student_grades, current_grades, name, id):
+    return student_input
+
+def saveGrades(student_grades, current_grades, name, id, password):
     student_grades[current_grades.keys()[0]] = current_grades[current_grades.keys()[0]]
-    student_grades[id]['name'] = name
+    student_grades[id]['user']['name'] = name
+    student_grades[id]['user']['password'] = password
     print (json.dumps(student_grades))
     file = open("gc_grades.json", "w")
     file.write(json.dumps(student_grades))
@@ -71,11 +86,10 @@ def saveGrades(student_grades, current_grades, name, id):
 
 def printCurrentGrade(grades, current_grades, name, id):
     curr_grade = 0
-    for key in current_grades[id]:
-        if current_grades[id][key] != -1:
-            if not current_grades[id][key] == name:
-                calc_grade = float(current_grades[id][key]) * grades[key] / 100
-                curr_grade = curr_grade + calc_grade
+    for key in current_grades[id]["grades"]:
+        if current_grades[id]["grades"][key] != -1:
+            calc_grade = float(current_grades[id]["grades"][key]) * grades[key] / 100
+            curr_grade = curr_grade + calc_grade
 
     return curr_grade
 
@@ -89,9 +103,9 @@ def matrix(curr_grade, conv_matrix):
 def main():
     grades, conv_matrix = loadSetupData()
     student_grades = loadStudentGrades()
-    name, id = askForUserInfo()
+    name, id, password = askForUserInfo()
     current_grades = askForAssignmentMarks(grades, student_grades, id)
-    saveGrades(student_grades, current_grades, name, id)
+    saveGrades(student_grades, current_grades, name, id, password)
     curr_grade = printCurrentGrade(grades, current_grades, name, id)
     matrix(curr_grade, conv_matrix)
 main()
