@@ -23,10 +23,13 @@ def loadStudentGrades():
     with open('gc_grades.json') as data_file:
         student_grades = json.load(data_file)
 
+    return student_grades
+
+def askForUserInfo():
     name = raw_input("Please, input your name ")
     id = raw_input("Please, input your id ")
 
-    return student_grades, name, id
+    return name, id
 
 def askForAssignmentMarks(grades, student_grades, id):
     current_grades = {id: {}}
@@ -85,7 +88,8 @@ def matrix(curr_grade, conv_matrix):
 
 def main():
     grades, conv_matrix = loadSetupData()
-    student_grades, name, id = loadStudentGrades()
+    student_grades = loadStudentGrades()
+    name, id = askForUserInfo()
     current_grades = askForAssignmentMarks(grades, student_grades, id)
     saveGrades(student_grades, current_grades, name, id)
     curr_grade = printCurrentGrade(grades, current_grades, name, id)
