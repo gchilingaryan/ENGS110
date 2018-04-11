@@ -1,4 +1,5 @@
 import json
+import md5
 
 def loadSetupData():
     with open('gc_setup.json') as data_file:
@@ -25,12 +26,26 @@ def loadStudentGrades():
 
     return student_grades
 
-def askForUserInfo():
+def askForUserInfo(student_grades):
     name = raw_input("Please, input your name ")
     id = raw_input("Please, input your id ")
     password = raw_input("Please, input your password ")
+    checkPassword(id, name, password, student_grades)
 
     return name, id, password
+
+def checkPassword(id, name, password, student_grades):
+    m = md5.new(password).digest()
+    try:
+        while True:
+            if m == md5.new(student_grades[id]['user']['password']).digest():
+                print "Welcome " + name
+                break
+            else:
+                password = raw_input("Try again! ")
+                m = md5.new(password).digest()
+    except:
+        pass
 
 def askForAssignmentMarks(grades, student_grades, id):
     current_grades = {id: {"user" : {}, "grades" : {}}}
@@ -59,7 +74,8 @@ def ValidNumber(key, current_grades, student_input, id):
     while True:
         if (student_input < 0 or student_input > 100) and student_input != -1:
             print "Wrong input! Input number from 0 to 100"
-            student_input = int(raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet "))
+            student_input = raw_input("What is your Current Grade for " + key + ". Please insert -1 if you don't have a grade yet ")
+            student_input = ValidInput(key, student_input)
         else:
             current_grades[id]["grades"][key] = student_input
             break
@@ -79,7 +95,6 @@ def saveGrades(student_grades, current_grades, name, id, password):
     student_grades[current_grades.keys()[0]] = current_grades[current_grades.keys()[0]]
     student_grades[id]['user']['name'] = name
     student_grades[id]['user']['password'] = password
-    print (json.dumps(student_grades))
     file = open("gc_grades.json", "w")
     file.write(json.dumps(student_grades))
     file.close()
@@ -103,7 +118,7 @@ def matrix(curr_grade, conv_matrix):
 def main():
     grades, conv_matrix = loadSetupData()
     student_grades = loadStudentGrades()
-    name, id, password = askForUserInfo()
+    name, id, password = askForUserInfo(student_grades)
     current_grades = askForAssignmentMarks(grades, student_grades, id)
     saveGrades(student_grades, current_grades, name, id, password)
     curr_grade = printCurrentGrade(grades, current_grades, name, id)
