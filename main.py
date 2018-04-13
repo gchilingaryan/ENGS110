@@ -1,5 +1,5 @@
 import json
-import md5
+import hashlib
 
 def loadSetupData():
     with open('gc_setup.json') as data_file:
@@ -30,22 +30,23 @@ def askForUserInfo(student_grades):
     name = raw_input("Please, input your name ")
     id = raw_input("Please, input your id ")
     password = raw_input("Please, input your password ")
-    checkPassword(id, name, password, student_grades)
 
     return name, id, password
 
 def checkPassword(id, name, password, student_grades):
-    m = md5.new(password).digest()
+    m = hashlib.sha224(password).hexdigest()
     try:
         while True:
-            if m == md5.new(student_grades[id]['user']['password']).digest():
+            if m == student_grades[id]['user']['password']:
                 print "Welcome " + name
                 break
             else:
                 password = raw_input("Try again! ")
-                m = md5.new(password).digest()
+                m = hashlib.sha224(password).hexdigest()
     except:
         pass
+
+    return m
 
 def askForAssignmentMarks(grades, student_grades, id):
     current_grades = {id: {"user" : {}, "grades" : {}}}
@@ -91,10 +92,10 @@ def ValidInput(key, student_input):
 
     return student_input
 
-def saveGrades(student_grades, current_grades, name, id, password):
+def saveGrades(student_grades, current_grades, name, id, m):
     student_grades[current_grades.keys()[0]] = current_grades[current_grades.keys()[0]]
     student_grades[id]['user']['name'] = name
-    student_grades[id]['user']['password'] = password
+    student_grades[id]['user']['password'] = m
     file = open("gc_grades.json", "w")
     file.write(json.dumps(student_grades))
     file.close()
@@ -119,8 +120,9 @@ def main():
     grades, conv_matrix = loadSetupData()
     student_grades = loadStudentGrades()
     name, id, password = askForUserInfo(student_grades)
+    m = checkPassword(id, name, password, student_grades)
     current_grades = askForAssignmentMarks(grades, student_grades, id)
-    saveGrades(student_grades, current_grades, name, id, password)
+    saveGrades(student_grades, current_grades, name, id, m)
     curr_grade = printCurrentGrade(grades, current_grades, name, id)
     matrix(curr_grade, conv_matrix)
 main()
