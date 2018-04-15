@@ -57,6 +57,7 @@ def askForUserInfo():
 
 def checkPassword(id, name, password, student_grades, teachers):
     m = hashlib.sha224(password).hexdigest()
+    #SM - user type is provided by the user in step 1 and it is available in main. should be checked like this if user == "teacher":
     if id in student_grades.keys():
         try:
             while True:
@@ -193,6 +194,7 @@ def main():
     student_grades = loadStudentGrades()
     teachers = loadTeachers()
     user, name, id, password = askForUserInfo()
+    #SM - Variable manes should be meaningful
     m = checkPassword(id, name, password, student_grades, teachers)
     current_grades = askForAssignmentMarks(user, grades, student_grades, id)
     student_grades = Teachers(teachers, student_grades, user, id, name, m)
