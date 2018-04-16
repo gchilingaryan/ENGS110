@@ -55,34 +55,33 @@ def askForUserInfo():
 
     return user, name, id, password
 
-def checkPassword(id, name, password, student_grades, teachers, user):
-    encoder = hashlib.sha224(password).hexdigest()
-    if user == "Student" or user == "student":
+def checkPassword(id, name, password, student_grades, teachers):
+    m = hashlib.sha224(password).hexdigest()
+    #SM - user type is provided by the user in step 1 and it is available in main. should be checked like this if user == "teacher":
+    if id in student_grades.keys():
         try:
             while True:
-                if encoder == student_grades[id]['user']['password']:
+                if m == student_grades[id]['user']['password']:
                     print "Welcome " + name
                     break
                 else:
                     password = raw_input("Try again! ")
-                    encoder = hashlib.sha224(password).hexdigest()
+                    m = hashlib.sha224(password).hexdigest()
         except:
-            print "Welcome " + name
             pass
-    elif user == "Teacher" or user == "teacher":
+    else:
         try:
             while True:
-                if encoder == teachers[id]['password']:
+                if m == teachers[id]['user']['password']:
                     print "Welcome " + name
                     break
                 else:
                     password = raw_input("Try again! ")
-                    encoder = hashlib.sha224(password).hexdigest()
+                    m = hashlib.sha224(password).hexdigest()
         except:
-            print "Welcome " + name
             pass
 
-    return encoder
+    return m
 
 def askForAssignmentMarks(user, grades, student_grades, id):
     if user == "Student" or user == "student":
@@ -128,7 +127,7 @@ def ValidInput(key, student_input):
 
     return student_input
 
-def Teachers(teachers, student_grades, user, id, name, encoder):
+def Teachers(teachers, student_grades, user, id, name, m):
     if user == "Teacher" or user == "teacher":
         if id in teachers.keys():
             print "Here is the list of all students and their grades:"
@@ -152,26 +151,26 @@ def Teachers(teachers, student_grades, user, id, name, encoder):
                 print "Have a nice day!"
         else:
             teachers[id] = {}
-            teachers[id]['name'] = name
-            teachers[id]['password'] = encoder
+            teachers[id]['user'] = {}
+            teachers[id]['user']['name'] = name
+            teachers[id]['user']['password'] = m
             file = open("gc_teachers.json", "w")
-            file.write(json.dumps(teachers, indent = 0))
+            file.write(json.dumps(teachers))
             file.close()
-            Teachers(teachers, student_grades, user, id, name, encoder)
 
     return student_grades
 
-def saveGrades(student_grades, current_grades, name, id, encoder):
+def saveGrades(student_grades, current_grades, name, id, m):
     try:
         student_grades[current_grades.keys()[0]] = current_grades[current_grades.keys()[0]]
         student_grades[id]['user']['name'] = name
-        student_grades[id]['user']['password'] = encoder
+        student_grades[id]['user']['password'] = m
         file = open("gc_grades.json", "w")
-        file.write(json.dumps(student_grades, indent = 0))
+        file.write(json.dumps(student_grades))
         file.close()
     except:
         file = open("gc_grades.json", "w")
-        file.write(json.dumps(student_grades, indent = 0))
+        file.write(json.dumps(student_grades))
         file.close()
 
 def printCurrentGrade(grades, student_grades, id):
@@ -195,10 +194,11 @@ def main():
     student_grades = loadStudentGrades()
     teachers = loadTeachers()
     user, name, id, password = askForUserInfo()
-    encoder = checkPassword(id, name, password, student_grades, teachers, user)
+    #SM - Variable manes should be meaningful
+    m = checkPassword(id, name, password, student_grades, teachers)
     current_grades = askForAssignmentMarks(user, grades, student_grades, id)
-    student_grades = Teachers(teachers, student_grades, user, id, name, encoder)
-    saveGrades(student_grades, current_grades, name, id, encoder)
+    student_grades = Teachers(teachers, student_grades, user, id, name, m)
+    saveGrades(student_grades, current_grades, name, id, m)
     try:
         curr_grade = printCurrentGrade(grades, student_grades, id)
         matrix(curr_grade, conv_matrix)
